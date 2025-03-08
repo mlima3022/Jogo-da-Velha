@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Configura o Socket.IO com CORS
 const io = new Server(server, {
   cors: {
-    origin: '*', // Permite conexões de qualquer origem (ou especifique o domínio do front-end)
+    origin: 'jogo-da-velha-production-49cc.up.railway.app', // Permite conexões de qualquer origem (ou especifique o domínio do front-end)
     methods: ['GET', 'POST'],
   },
 });
