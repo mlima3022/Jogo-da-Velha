@@ -69,7 +69,7 @@ socket.on('gameState', (state) => {
     gameState = state;
     updateBoard(state.board);
     currentPlayerDisplay.textContent = state.currentPlayer;
-    updateActiveBoards();
+    updateActiveBoards(state.nextBoardRow, state.nextBoardCol); // Atualiza os tabuleiros ativos
 });
 
 // Recebe o papel do jogador (X ou O)
@@ -103,6 +103,23 @@ function updateBoard(board) {
             }
         }
     }
+}
+
+// Atualiza os tabuleiros ativos (com borda amarela)
+function updateActiveBoards(nextBoardRow, nextBoardCol) {
+    const smallBoards = document.querySelectorAll('.small-board');
+    smallBoards.forEach((smallBoard) => {
+        const row = parseInt(smallBoard.dataset.row);
+        const col = parseInt(smallBoard.dataset.col);
+
+        // Remove a borda amarela de todos os tabuleiros
+        smallBoard.classList.remove('active-board');
+
+        // Adiciona a borda amarela aos tabuleiros ativos
+        if (nextBoardRow === null || (nextBoardRow === row && nextBoardCol === col)) {
+            smallBoard.classList.add('active-board');
+        }
+    });
 }
 
 // Inicia o jogo
