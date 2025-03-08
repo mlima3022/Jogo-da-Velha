@@ -1,4 +1,4 @@
-const socket = io('http://localhost:3000'); // Conecta ao servidor Socket.IO
+const socket = io('jogo-da-velha-production-49cc.up.railway.app'); // Conecta ao servidor Socket.IO
 
 const bigBoard = document.getElementById('big-board');
 const currentPlayerDisplay = document.getElementById('current-player');
