@@ -164,7 +164,7 @@ socket.on('gameState', (state) => {
         for (let col = 0; col < 3; col++) {
             const winner = checkSmallBoardWin(state.board[row][col]);
             if (winner) {
-                // Marca o tabuleiro menor como concluído (não permite mais jogadas)
+                // Marca o tabuleiro menor como concluído (vencido)
                 state.board[row][col].winner = winner;
             }
         }
@@ -201,11 +201,10 @@ function updateBoard(board) {
             if (smallBoard) {
                 const cells = smallBoard.querySelectorAll('.cell');
 
-                // Verifica se o tabuleiro menor foi concluído (vencido ou cheio)
+                // Verifica se o tabuleiro menor foi concluído (vencido)
                 const winner = checkSmallBoardWin(board[row][col]);
-                const isFull = isSmallBoardFull(board[row][col]);
 
-                if (winner || isFull) {
+                if (winner) {
                     // Bloqueia novas jogadas no tabuleiro menor
                     cells.forEach(cell => {
                         cell.removeEventListener('click', handleCellClick);
@@ -243,8 +242,8 @@ function updateActiveBoards(nextBoardRow, nextBoardCol) {
         // Remove a borda amarela de todos os tabuleiros
         smallBoard.classList.remove('active-board');
 
-        // Verifica se o tabuleiro está concluído (vencido ou cheio)
-        const isBoardConcluded = checkSmallBoardWin(gameState.board[row][col]) !== null || isSmallBoardFull(gameState.board[row][col]);
+        // Verifica se o tabuleiro está concluído (vencido)
+        const isBoardConcluded = checkSmallBoardWin(gameState.board[row][col]) !== null;
 
         // Se o próximo tabuleiro estiver concluído, destaca todos os tabuleiros não concluídos
         if (nextBoardRow === null && nextBoardCol === null && !isBoardConcluded) {
