@@ -63,13 +63,78 @@ function handleCellClick(cell, smallBoard) {
     }
 }
 
+// Verifica vitória em um tabuleiro menor (3x3)
+function checkSmallBoardWin(board) {
+    // Verifica linhas
+    for (let i = 0; i < 3; i++) {
+        if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+            return board[i][0]; // Retorna 'X' ou 'O' se houver vitória
+        }
+    }
+
+    // Verifica colunas
+    for (let j = 0; j < 3; j++) {
+        if (board[0][j] && board[0][j] === board[1][j] && board[1][j] === board[2][j]) {
+            return board[0][j]; // Retorna 'X' ou 'O' se houver vitória
+        }
+    }
+
+    // Verifica diagonais
+    if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+        return board[0][0]; // Retorna 'X' ou 'O' se houver vitória
+    }
+    if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+        return board[0][2]; // Retorna 'X' ou 'O' se houver vitória
+    }
+
+    return null; // Retorna null se não houver vitória
+}
+
+// Verifica vitória no tabuleiro maior (3x3 de tabuleiros menores)
+function checkBigBoardWin(bigBoard) {
+    // Cria uma matriz 3x3 para armazenar o vencedor de cada tabuleiro menor
+    const winners = [
+        [null, null, null],
+        [null, null, null],
+        [null, null, null]
+    ];
+
+    // Preenche a matriz de vencedores
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            winners[row][col] = checkSmallBoardWin(bigBoard[row][col]);
+        }
+    }
+
+    // Verifica vitória no tabuleiro maior usando a matriz de vencedores
+    return checkSmallBoardWin(winners);
+}
+
 // Recebe o estado do jogo do servidor
 socket.on('gameState', (state) => {
     console.log("Estado do jogo recebido:", state);
     gameState = state;
+
+    // Verifica vitória no tabuleiro menor
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            const winner = checkSmallBoardWin(state.board[row][col]);
+            if (winner) {
+                state.board[row][col] = winner; // Marca o tabuleiro menor como vencido
+            }
+        }
+    }
+
+    // Verifica vitória no tabuleiro maior
+    const bigBoardWinner = checkBigBoardWin(state.board);
+    if (bigBoardWinner) {
+        message.textContent = `Jogador ${bigBoardWinner} venceu o jogo!`;
+    }
+
+    // Atualiza a interface
     updateBoard(state.board);
     currentPlayerDisplay.textContent = state.currentPlayer;
-    updateActiveBoards(state.nextBoardRow, state.nextBoardCol); // Atualiza os tabuleiros ativos
+    updateActiveBoards(state.nextBoardRow, state.nextBoardCol);
 });
 
 // Recebe o papel do jogador (X ou O)
@@ -96,6 +161,16 @@ function updateBoard(board) {
             const smallBoard = document.querySelector(`.small-board[data-row="${row}"][data-col="${col}"]`);
             if (smallBoard) {
                 const cells = smallBoard.querySelectorAll('.cell');
+
+                // Verifica se o tabuleiro menor foi vencido
+                const winner = checkSmallBoardWin(board[row][col]);
+                if (winner) {
+                    smallBoard.classList.add(`winner-${winner}`);
+                } else {
+                    smallBoard.classList.remove('winner-X', 'winner-O');
+                }
+
+                // Atualiza as células
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         const cell = cells[i * 3 + j];
