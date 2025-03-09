@@ -177,30 +177,21 @@ socket.on('playerRole', (role) => {
     message.textContent = `Você é o jogador ${role}`;
 });
 // Inicia o Jogo
-socket.on('connection', (socket) => {
-    console.log('Um cliente conectou:', socket.id);
+let gameInitialized = false;
 
-    // Atribui um papel ao jogador (X ou O)
-    const role = Math.random() < 0.5 ? 'X' : 'O';
-    socket.emit('playerRole', role);
+socket.on('gameState', (state) => {
+    console.log("Estado do jogo recebido:", state);
+    gameState = state;
 
-    // Atribui o jogador a uma sala
-    const room = 'sala-1'; // Lógica para atribuir salas dinamicamente
-    socket.join(room);
-    socket.emit('roomAssigned', room);
+    if (!gameInitialized) {
+        gameInitialized = true;
+        message.textContent = `Jogo iniciado! Você é o jogador ${currentPlayerRole}`;
+    }
 
-    // Envia o estado inicial do jogo
-    const initialGameState = {
-        board: [
-            [[null, null, null], [null, null, null], [null, null, null]],
-            [[null, null, null], [null, null, null], [null, null, null]],
-            [[null, null, null], [null, null, null], [null, null, null]]
-        ],
-        currentPlayer: 'X', // Ou 'O', dependendo da lógica do servidor
-        nextBoardRow: null,
-        nextBoardCol: null
-    };
-    socket.emit('gameState', initialGameState);
+    // Atualiza o tabuleiro e a interface
+    updateBoard(state.board);
+    currentPlayerDisplay.textContent = state.currentPlayer;
+    updateActiveBoards(state.nextBoardRow, state.nextBoardCol);
 });
 
 // Recebe a sala atual do jogador
