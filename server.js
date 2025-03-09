@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Configura o Socket.IO com CORS
 const io = new Server(server, {
   cors: {
-    origin: 'jogo-da-velha-production-49cc.up.railway.app', // Permite conexões de qualquer origem (ou especifique o domínio do front-end)
+    origin: 'https://jogo-da-velha-production-49cc.up.railway.app/multiplayer.html', // Permite conexões de qualquer origem (ou especifique o domínio do front-end)
     methods: ['GET', 'POST'],
   },
 });
@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Lógica da sala multiplayer (mantida igual ao anterior)
+// Lógica da sala multiplayer
 function handleMultiplayerRoom(socket) {
   // Encontra uma sala disponível ou cria uma nova
   let roomId = findAvailableRoom();
@@ -57,8 +57,7 @@ function handleMultiplayerRoom(socket) {
           Array.from({ length: 3 }, () => 
             Array(3).fill(null)
           )
-        )
-      ),
+        ),
       currentPlayer: 'X',
       nextBoardRow: null,
       nextBoardCol: null,
@@ -74,39 +73,14 @@ function handleMultiplayerRoom(socket) {
   if (Object.keys(roomState.players).length < 2) {
     roomState.players[socket.id] = Object.keys(roomState.players).length === 0 ? 'X' : 'O';
     socket.emit('playerRole', roomState.players[socket.id]); // Informa ao jogador seu papel (X ou O)
+    socket.emit('roomAssigned', roomId); // Informa ao jogador a sala em que ele está
   } else {
     socket.emit('gameFull'); // Informa que o jogo está cheio
     socket.disconnect();
     return;
   }
 
-  socket.on('connection', (socket) => {
-    console.log('Um cliente conectou:', socket.id);
-
-    // Atribui um papel ao jogador (X ou O)
-    const role = Math.random() < 0.5 ? 'X' : 'O';
-    socket.emit('playerRole', role);
-
-    // Atribui o jogador a uma sala
-    const room = 'sala-1'; // Lógica para atribuir salas dinamicamente
-    socket.join(room);
-    socket.emit('roomAssigned', room);
-
-    // Envia o estado inicial do jogo
-    const initialGameState = {
-        board: [
-            [[null, null, null], [null, null, null], [null, null, null]],
-            [[null, null, null], [null, null, null], [null, null, null]],
-            [[null, null, null], [null, null, null], [null, null, null]]
-        ],
-        currentPlayer: 'X', // Ou 'O', dependendo da lógica do servidor
-        nextBoardRow: null,
-        nextBoardCol: null
-    };
-    socket.emit('gameState', initialGameState);
-});
-
-  // Envia o estado atual do jogo para o novo jogador
+  // Envia o estado inicial do jogo para o novo jogador
   socket.emit('gameState', roomState);
 
   // Atualiza o estado do jogo quando um jogador faz uma jogada
@@ -156,8 +130,7 @@ function handleBotRoom(socket) {
         Array.from({ length: 3 }, () => 
           Array(3).fill(null)
         )
-      )
-    ),
+      ),
     currentPlayer: 'X',
     nextBoardRow: null,
     nextBoardCol: null,
