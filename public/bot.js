@@ -39,6 +39,7 @@ function createBigBoard() {
             bigBoard.appendChild(smallBoard);
         }
     }
+    updateActiveBoards(); // Atualiza os tabuleiros ativos ao criar o tabuleiro
 }
 
 // Função para verificar se há um vencedor em um tabuleiro menor
@@ -128,13 +129,17 @@ function updateActiveBoards() {
     smallBoards.forEach(board => {
         const row = parseInt(board.dataset.row);
         const col = parseInt(board.dataset.col);
+
+        // Remove a borda amarela de todos os tabuleiros
+        board.classList.remove('active-board');
+
+        // Verifica se o tabuleiro está ativo
         if (
             (nextBoardRow === null || (nextBoardRow === row && nextBoardCol === col)) &&
             bigBoardState[row][col] === null
         ) {
-            board.classList.add('active');
-        } else {
-            board.classList.remove('active');
+            // Adiciona a borda amarela ao tabuleiro ativo
+            board.classList.add('active-board');
         }
     });
 }
