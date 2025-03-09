@@ -1,4 +1,4 @@
-const socket = io('jogo-da-velha-production-49cc.up.railway.app'); // Conecta ao servidor Socket.IO
+const socket = io('https://jogo-da-velha-production-49cc.up.railway.app'); // Conecta ao servidor Socket.IO
 
 const bigBoard = document.getElementById('big-board');
 const currentPlayerDisplay = document.getElementById('current-player');
@@ -10,6 +10,10 @@ const scoreO = document.getElementById('score-o');
 let currentPlayerRole = null; // Papel do jogador (X ou O)
 let gameState = null; // Estado atual do jogo
 let currentRoom = null; // Sala atual do jogador
+let gameInitialized = false; // Verifica se o jogo foi inicializado
+
+// Escolhe a sala (multiplayer)
+socket.emit('chooseRoom', 'multiplayer'); // Escolhe a sala multiplayer ao conectar
 
 // Novo jogo
 newGameButton.addEventListener('click', () => {
@@ -148,6 +152,11 @@ socket.on('gameState', (state) => {
     console.log("Estado do jogo recebido:", state);
     gameState = state;
 
+    if (!gameInitialized) {
+        gameInitialized = true;
+        message.textContent = `Jogo iniciado! Você é o jogador ${currentPlayerRole}`;
+    }
+
     // Verifica vitória no tabuleiro menor
     for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
@@ -175,23 +184,6 @@ socket.on('gameState', (state) => {
 socket.on('playerRole', (role) => {
     currentPlayerRole = role;
     message.textContent = `Você é o jogador ${role}`;
-});
-// Inicia o Jogo
-let gameInitialized = false;
-
-socket.on('gameState', (state) => {
-    console.log("Estado do jogo recebido:", state);
-    gameState = state;
-
-    if (!gameInitialized) {
-        gameInitialized = true;
-        message.textContent = `Jogo iniciado! Você é o jogador ${currentPlayerRole}`;
-    }
-
-    // Atualiza o tabuleiro e a interface
-    updateBoard(state.board);
-    currentPlayerDisplay.textContent = state.currentPlayer;
-    updateActiveBoards(state.nextBoardRow, state.nextBoardCol);
 });
 
 // Recebe a sala atual do jogador
