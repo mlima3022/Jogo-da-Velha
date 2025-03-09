@@ -56,11 +56,25 @@ function handleCellClick(cell, smallBoard) {
     const cellRow = parseInt(cell.dataset.row);
     const cellCol = parseInt(cell.dataset.col);
 
-    if (!cell.textContent && (gameState.nextBoardRow === null || (gameState.nextBoardRow === boardRow && gameState.nextBoardCol === boardCol))) {
-        socket.emit('makeMove', { row: boardRow, col: boardCol, cellRow, cellCol });
+    // Verifica se o próximo tabuleiro está vencido ou cheio
+    const nextBoardRow = cellRow;
+    const nextBoardCol = cellCol;
+    const nextBoard = gameState.board[nextBoardRow][nextBoardCol];
+
+    const isNextBoardWon = checkSmallBoardWin(nextBoard) !== null;
+    const isNextBoardFull = isSmallBoardFull(nextBoard);
+
+    // Se o próximo tabuleiro estiver vencido ou cheio, permite jogar em qualquer tabuleiro não vencido
+    if (isNextBoardWon || isNextBoardFull) {
+        gameState.nextBoardRow = null;
+        gameState.nextBoardCol = null;
     } else {
-        console.log("Jogada inválida: célula já preenchida ou tabuleiro errado.");
+        gameState.nextBoardRow = nextBoardRow;
+        gameState.nextBoardCol = nextBoardCol;
     }
+
+    // Emite a jogada
+    socket.emit('makeMove', { row: boardRow, col: boardCol, cellRow, cellCol });
 }
 
 // Verifica vitória em um tabuleiro menor (3x3)
@@ -88,6 +102,18 @@ function checkSmallBoardWin(board) {
     }
 
     return null; // Retorna null se não houver vitória
+}
+
+// Verifica se um tabuleiro menor está cheio
+function isSmallBoardFull(board) {
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (!board[i][j]) {
+                return false; // Ainda há células vazias
+            }
+        }
+    }
+    return true; // Tabuleiro cheio
 }
 
 // Verifica vitória no tabuleiro maior (3x3 de tabuleiros menores)
@@ -245,12 +271,6 @@ function botMove() {
     }
 }
 
-// Verifica se um tabuleiro menor está cheio
-function isSmallBoardFull(board) {
-    const cells = Array.from(board.querySelectorAll('.cell'));
-    return cells.every(cell => cell.textContent !== '');
-}
-
 // Recebe o estado do jogo do servidor
 socket.on('gameState', (state) => {
     console.log("Estado do jogo recebido:", state);
@@ -261,7 +281,8 @@ socket.on('gameState', (state) => {
         for (let col = 0; col < 3; col++) {
             const winner = checkSmallBoardWin(state.board[row][col]);
             if (winner) {
-                state.board[row][col] = winner; // Marca o tabuleiro menor como vencido
+                // Marca o tabuleiro menor como vencido
+                state.board[row][col] = winner; // Substitui o tabuleiro pelo vencedor ('X' ou 'O')
             }
         }
     }
@@ -300,7 +321,12 @@ function updateBoard(board) {
                 // Verifica se o tabuleiro menor foi vencido
                 const winner = checkSmallBoardWin(board[row][col]);
                 if (winner) {
+                    // Marca o tabuleiro como vencido
                     smallBoard.classList.add(`winner-${winner}`);
+                    // Bloqueia novas jogadas no tabuleiro menor
+                    cells.forEach(cell => {
+                        cell.removeEventListener('click', handleCellClick);
+                    });
                 } else {
                     smallBoard.classList.remove('winner-X', 'winner-O');
                 }
@@ -336,8 +362,13 @@ function updateActiveBoards(nextBoardRow, nextBoardCol) {
         // Remove a borda amarela de todos os tabuleiros
         smallBoard.classList.remove('active-board');
 
-        // Adiciona a borda amarela aos tabuleiros ativos
-        if (nextBoardRow === null || (nextBoardRow === row && nextBoardCol === col)) {
+        // Verifica se o tabuleiro está vencido
+        const isBoardWon = checkSmallBoardWin(gameState.board[row][col]) !== null;
+
+        // Se o próximo tabuleiro estiver vencido ou cheio, destaca todos os tabuleiros não vencidos
+        if (nextBoardRow === null && nextBoardCol === null && !isBoardWon) {
+            smallBoard.classList.add('active-board');
+        } else if (nextBoardRow === row && nextBoardCol === col) {
             smallBoard.classList.add('active-board');
         }
     });
