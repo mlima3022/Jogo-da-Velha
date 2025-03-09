@@ -80,6 +80,32 @@ function handleMultiplayerRoom(socket) {
     return;
   }
 
+  socket.on('connection', (socket) => {
+    console.log('Um cliente conectou:', socket.id);
+
+    // Atribui um papel ao jogador (X ou O)
+    const role = Math.random() < 0.5 ? 'X' : 'O';
+    socket.emit('playerRole', role);
+
+    // Atribui o jogador a uma sala
+    const room = 'sala-1'; // Lógica para atribuir salas dinamicamente
+    socket.join(room);
+    socket.emit('roomAssigned', room);
+
+    // Envia o estado inicial do jogo
+    const initialGameState = {
+        board: [
+            [[null, null, null], [null, null, null], [null, null, null]],
+            [[null, null, null], [null, null, null], [null, null, null]],
+            [[null, null, null], [null, null, null], [null, null, null]]
+        ],
+        currentPlayer: 'X', // Ou 'O', dependendo da lógica do servidor
+        nextBoardRow: null,
+        nextBoardCol: null
+    };
+    socket.emit('gameState', initialGameState);
+});
+
   // Envia o estado atual do jogo para o novo jogador
   socket.emit('gameState', roomState);
 
