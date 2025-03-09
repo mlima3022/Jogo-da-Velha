@@ -79,6 +79,8 @@ function handleCellClick(cell, smallBoard) {
 
 // Verifica vitória em um tabuleiro menor (3x3)
 function checkSmallBoardWin(board) {
+    if (!board) return null; // Verifica se o tabuleiro existe
+
     // Verifica linhas
     for (let i = 0; i < 3; i++) {
         if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
@@ -106,6 +108,7 @@ function checkSmallBoardWin(board) {
 
 // Verifica se um tabuleiro menor está cheio
 function isSmallBoardFull(board) {
+    if (!board) return false; // Verifica se o tabuleiro existe
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             if (!board[i][j]) {
