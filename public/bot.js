@@ -56,29 +56,34 @@ function handleCellClick(cell, smallBoard) {
     const cellRow = parseInt(cell.dataset.row);
     const cellCol = parseInt(cell.dataset.col);
 
-    // Verifica se o próximo tabuleiro está vencido ou cheio
-    const nextBoardRow = cellRow;
-    const nextBoardCol = cellCol;
-    const nextBoard = gameState.board[nextBoardRow][nextBoardCol];
+    // Verifica se o tabuleiro menor está ativo
+    if (!isBoardActive(boardRow, boardCol)) {
+        console.log("Este tabuleiro não está ativo.");
+        return;
+    }
 
-    const isNextBoardWon = checkSmallBoardWin(nextBoard) !== null;
-    const isNextBoardFull = isSmallBoardFull(nextBoard);
-
-    // Se o próximo tabuleiro estiver vencido ou cheio, permite jogar em qualquer tabuleiro não vencido
-    if (isNextBoardWon || isNextBoardFull) {
-        gameState.nextBoardRow = null;
-        gameState.nextBoardCol = null;
-    } else {
-        gameState.nextBoardRow = nextBoardRow;
-        gameState.nextBoardCol = nextBoardCol;
+    // Verifica se a célula já está ocupada
+    if (gameState.board[boardRow][boardCol][cellRow][cellCol]) {
+        console.log("Célula já ocupada.");
+        return;
     }
 
     // Emite a jogada
     socket.emit('makeMove', { row: boardRow, col: boardCol, cellRow, cellCol });
 }
 
+// Verifica se um tabuleiro menor está ativo
+function isBoardActive(row, col) {
+    if (gameState.nextBoardRow === null && gameState.nextBoardCol === null) {
+        return true; // Todos os tabuleiros estão ativos
+    }
+    return row === gameState.nextBoardRow && col === gameState.nextBoardCol;
+}
+
 // Verifica vitória em um tabuleiro menor (3x3)
 function checkSmallBoardWin(board) {
+    if (!board) return null;
+
     // Verifica linhas
     for (let i = 0; i < 3; i++) {
         if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
@@ -154,7 +159,7 @@ function botMove() {
         activeBoards = Array.from(document.querySelectorAll('.small-board')).filter(board => {
             const row = parseInt(board.dataset.row);
             const col = parseInt(board.dataset.col);
-            return gameState.board[row][col] === null && !isSmallBoardFull(board);
+            return !checkSmallBoardWin(gameState.board[row][col]) && !isSmallBoardFull(gameState.board[row][col]);
         });
         console.log("Bot escolheu entre todos os tabuleiros ativos.");
     }
