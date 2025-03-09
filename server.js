@@ -58,7 +58,7 @@ function handleMultiplayerRoom(socket) {
             Array(3).fill(null)
           )
         ),
-      currentPlayer: X,
+      currentPlayer: "X",
       nextBoardRow: null,
       nextBoardCol: null,
     });
