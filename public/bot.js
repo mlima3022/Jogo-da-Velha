@@ -164,8 +164,8 @@ socket.on('gameState', (state) => {
         for (let col = 0; col < 3; col++) {
             const winner = checkSmallBoardWin(state.board[row][col]);
             if (winner) {
-                // Marca o tabuleiro menor como vencido
-                state.board[row][col] = winner; // Substitui o tabuleiro pelo vencedor ('X' ou 'O')
+                // Marca o tabuleiro menor como concluído (não permite mais jogadas)
+                state.board[row][col].winner = winner;
             }
         }
     }
@@ -201,17 +201,15 @@ function updateBoard(board) {
             if (smallBoard) {
                 const cells = smallBoard.querySelectorAll('.cell');
 
-                // Verifica se o tabuleiro menor foi vencido
+                // Verifica se o tabuleiro menor foi concluído (vencido ou cheio)
                 const winner = checkSmallBoardWin(board[row][col]);
-                if (winner) {
-                    // Marca o tabuleiro como vencido
-                    smallBoard.classList.add(`winner-${winner}`);
+                const isFull = isSmallBoardFull(board[row][col]);
+
+                if (winner || isFull) {
                     // Bloqueia novas jogadas no tabuleiro menor
                     cells.forEach(cell => {
                         cell.removeEventListener('click', handleCellClick);
                     });
-                } else {
-                    smallBoard.classList.remove('winner-X', 'winner-O');
                 }
 
                 // Atualiza as células
@@ -245,11 +243,11 @@ function updateActiveBoards(nextBoardRow, nextBoardCol) {
         // Remove a borda amarela de todos os tabuleiros
         smallBoard.classList.remove('active-board');
 
-        // Verifica se o tabuleiro está vencido
-        const isBoardWon = checkSmallBoardWin(gameState.board[row][col]) !== null;
+        // Verifica se o tabuleiro está concluído (vencido ou cheio)
+        const isBoardConcluded = checkSmallBoardWin(gameState.board[row][col]) !== null || isSmallBoardFull(gameState.board[row][col]);
 
-        // Se o próximo tabuleiro estiver vencido ou cheio, destaca todos os tabuleiros não vencidos
-        if (nextBoardRow === null && nextBoardCol === null && !isBoardWon) {
+        // Se o próximo tabuleiro estiver concluído, destaca todos os tabuleiros não concluídos
+        if (nextBoardRow === null && nextBoardCol === null && !isBoardConcluded) {
             smallBoard.classList.add('active-board');
         } else if (nextBoardRow === row && nextBoardCol === col) {
             smallBoard.classList.add('active-board');
