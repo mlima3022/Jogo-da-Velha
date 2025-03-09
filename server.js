@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Configura o Socket.IO com CORS
 const io = new Server(server, {
   cors: {
-    origin: 'https://jogo-da-velha-production-49cc.up.railway.app/multiplayer.html', // Permite conexões de qualquer origem (ou especifique o domínio do front-end)
+    origin: 'https://jogo-da-velha-production-49cc.up.railway.app', // Permite conexões apenas do frontend especificado
     methods: ['GET', 'POST'],
   },
 });
@@ -58,7 +58,7 @@ function handleMultiplayerRoom(socket) {
             Array(3).fill(null)
           )
         ),
-      currentPlayer: 'X',
+      currentPlayer: 'X', // Linha 61 corrigida
       nextBoardRow: null,
       nextBoardCol: null,
     });
