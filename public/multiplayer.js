@@ -9,13 +9,11 @@ const scoreO = document.getElementById('score-o');
 
 let currentPlayerRole = null; // Papel do jogador (X ou O)
 let gameState = null; // Estado atual do jogo
-
-// Escolha da sala (multiplayer)
-socket.emit('chooseRoom', 'multiplayer');
+let currentRoom = null; // Sala atual do jogador
 
 // Novo jogo
 newGameButton.addEventListener('click', () => {
-    socket.emit('restartGame');
+    socket.emit('restartGame', currentRoom); // Reinicia o jogo na sala atual
 });
 
 // Cria o tabuleiro grande
@@ -51,6 +49,12 @@ function handleCellClick(cell, smallBoard) {
         return;
     }
 
+    // Verifica se é a vez do jogador
+    if (currentPlayerRole !== gameState.currentPlayer) {
+        console.log("Não é a sua vez.");
+        return;
+    }
+
     const boardRow = parseInt(smallBoard.dataset.row);
     const boardCol = parseInt(smallBoard.dataset.col);
     const cellRow = parseInt(cell.dataset.row);
@@ -74,7 +78,7 @@ function handleCellClick(cell, smallBoard) {
     }
 
     // Emite a jogada
-    socket.emit('makeMove', { row: boardRow, col: boardCol, cellRow, cellCol });
+    socket.emit('makeMove', { room: currentRoom, row: boardRow, col: boardCol, cellRow, cellCol });
 }
 
 // Verifica vitória em um tabuleiro menor (3x3)
@@ -171,6 +175,12 @@ socket.on('gameState', (state) => {
 socket.on('playerRole', (role) => {
     currentPlayerRole = role;
     message.textContent = `Você é o jogador ${role}`;
+});
+
+// Recebe a sala atual do jogador
+socket.on('roomAssigned', (room) => {
+    currentRoom = room;
+    console.log(`Você foi colocado na sala: ${room}`);
 });
 
 // Notifica que o jogo está cheio
