@@ -82,7 +82,10 @@ function isBoardActive(row, col) {
 
 // Verifica vitória em um tabuleiro menor (3x3)
 function checkSmallBoardWin(board) {
-    if (!board) return null;
+    if (!board || !Array.isArray(board)) {
+        console.error("Tabuleiro inválido:", board);
+        return null;
+    }
 
     // Verifica linhas
     for (let i = 0; i < 3; i++) {
@@ -111,6 +114,11 @@ function checkSmallBoardWin(board) {
 
 // Verifica se um tabuleiro menor está cheio
 function isSmallBoardFull(board) {
+    if (!board || !Array.isArray(board)) {
+        console.error("Tabuleiro inválido:", board);
+        return false;
+    }
+
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             if (!board[i][j]) {
@@ -123,6 +131,11 @@ function isSmallBoardFull(board) {
 
 // Verifica vitória no tabuleiro maior (3x3 de tabuleiros menores)
 function checkBigBoardWin(bigBoard) {
+    if (!bigBoard || !Array.isArray(bigBoard)) {
+        console.error("Tabuleiro maior inválido:", bigBoard);
+        return null;
+    }
+
     // Cria uma matriz 3x3 para armazenar o vencedor de cada tabuleiro menor
     const winners = [
         [null, null, null],
@@ -139,141 +152,6 @@ function checkBigBoardWin(bigBoard) {
 
     // Verifica vitória no tabuleiro maior usando a matriz de vencedores
     return checkSmallBoardWin(winners);
-}
-
-// Movimento do bot inteligente
-function botMove() {
-    console.log("Bot está jogando...");
-
-    // 1. Encontra todos os tabuleiros ativos
-    let activeBoards = [];
-    if (gameState.nextBoardRow !== null && gameState.nextBoardCol !== null) {
-        // Se houver um tabuleiro ativo específico, usa apenas ele
-        const targetBoard = document.querySelector(
-            `.small-board[data-row="${gameState.nextBoardRow}"][data-col="${gameState.nextBoardCol}"]`
-        );
-        activeBoards = [targetBoard];
-        console.log(`Tabuleiro ativo: [${gameState.nextBoardRow}, ${gameState.nextBoardCol}]`);
-    } else {
-        // Se não houver tabuleiro ativo específico, usa todos os tabuleiros disponíveis
-        activeBoards = Array.from(document.querySelectorAll('.small-board')).filter(board => {
-            const row = parseInt(board.dataset.row);
-            const col = parseInt(board.dataset.col);
-            return !checkSmallBoardWin(gameState.board[row][col]) && !isSmallBoardFull(gameState.board[row][col]);
-        });
-        console.log("Bot escolheu entre todos os tabuleiros ativos.");
-    }
-
-    if (activeBoards.length === 0) {
-        console.log("Nenhum tabuleiro disponível para o bot jogar.");
-        return;
-    }
-
-    // 2. Heurística do bot
-    let bestCell = null;
-    let bestBoard = null;
-
-    // Função para verificar se uma jogada é problemática
-    function isProblematicMove(board, cell) {
-        // Simula a jogada do bot
-        cell.textContent = 'O';
-
-        // Verifica se a jogada permite que o jogador X vença no próximo turno
-        let allowsXToWin = false;
-        for (const b of activeBoards) {
-            const cells = Array.from(b.querySelectorAll('.cell:not(.X):not(.O)'));
-            for (const c of cells) {
-                c.textContent = 'X'; // Simula a jogada do jogador X
-                if (checkSmallBoardWin(b)) {
-                    allowsXToWin = true;
-                    c.textContent = ''; // Desfaz a simulação
-                    break;
-                }
-                c.textContent = ''; // Desfaz a simulação
-            }
-            if (allowsXToWin) break;
-        }
-
-        // Desfaz a simulação da jogada do bot
-        cell.textContent = '';
-
-        // Retorna true se a jogada for problemática
-        return allowsXToWin;
-    }
-
-    // Prioridade 1: Bloquear o jogador X (se o jogador puder ganhar em algum tabuleiro ativo)
-    for (const board of activeBoards) {
-        const cells = Array.from(board.querySelectorAll('.cell:not(.X):not(.O)'));
-        for (const cell of cells) {
-            cell.textContent = 'X'; // Simula a jogada do jogador X
-            if (checkSmallBoardWin(board)) {
-                if (!isProblematicMove(board, cell)) {
-                    bestCell = cell;
-                    bestBoard = board;
-                }
-                cell.textContent = ''; // Desfaz a simulação
-                break;
-            }
-            cell.textContent = ''; // Desfaz a simulação
-        }
-        if (bestCell) break; // Se encontrou uma jogada para bloquear, para de procurar
-    }
-
-    // Prioridade 2: Vencer (se o bot puder ganhar em algum tabuleiro ativo)
-    if (!bestCell) {
-        for (const board of activeBoards) {
-            const cells = Array.from(board.querySelectorAll('.cell:not(.X):not(.O)'));
-            for (const cell of cells) {
-                cell.textContent = 'O'; // Simula a jogada do bot
-                if (checkSmallBoardWin(board)) {
-                    if (!isProblematicMove(board, cell)) {
-                        bestCell = cell;
-                        bestBoard = board;
-                    }
-                    cell.textContent = ''; // Desfaz a simulação
-                    break;
-                }
-                cell.textContent = ''; // Desfaz a simulação
-            }
-            if (bestCell) break; // Se encontrou uma jogada vencedora, para de procurar
-        }
-    }
-
-    // Prioridade 3: Jogar em uma célula segura (não problemática)
-    if (!bestCell) {
-        const availableMoves = [];
-        for (const board of activeBoards) {
-            const cells = Array.from(board.querySelectorAll('.cell:not(.X):not(.O)'));
-            for (const cell of cells) {
-                if (!isProblematicMove(board, cell)) {
-                    availableMoves.push({ cell, board });
-                }
-            }
-        }
-        if (availableMoves.length > 0) {
-            // Escolhe uma jogada aleatória entre as disponíveis
-            const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-            bestCell = randomMove.cell;
-            bestBoard = randomMove.board;
-        } else {
-            // Se todas as jogadas forem problemáticas, escolhe a menos problemática
-            const randomBoard = activeBoards[Math.floor(Math.random() * activeBoards.length)];
-            const availableCells = Array.from(randomBoard.querySelectorAll('.cell:not(.X):not(.O)'));
-            bestCell = availableCells[Math.floor(Math.random() * availableCells.length)];
-            bestBoard = randomBoard;
-        }
-    }
-
-    // 3. Faz a jogada do bot
-    if (bestCell && bestBoard) {
-        const boardRow = parseInt(bestBoard.dataset.row);
-        const boardCol = parseInt(bestBoard.dataset.col);
-        const cellRow = parseInt(bestCell.dataset.row);
-        const cellCol = parseInt(bestCell.dataset.col);
-
-        // Emite a jogada do bot
-        socket.emit('makeMove', { row: boardRow, col: boardCol, cellRow, cellCol });
-    }
 }
 
 // Recebe o estado do jogo do servidor
