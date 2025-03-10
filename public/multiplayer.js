@@ -69,7 +69,7 @@ function handleCellClick(cell, smallBoard) {
     const nextBoardCol = cellCol;
     const nextBoard = gameState.board[nextBoardRow] && gameState.board[nextBoardRow][nextBoardCol];
 
-    const isNextBoardWon = checkSmallBoardWin(nextBoard) !== null;
+    const isNextBoardWon = nextBoard && nextBoard.winner; // Verifica se o tabuleiro já tem um vencedor
     const isNextBoardFull = isSmallBoardFull(nextBoard);
 
     // Se o próximo tabuleiro estiver vencido ou cheio, permite jogar em qualquer tabuleiro não vencido
@@ -161,7 +161,7 @@ function checkBigBoardWin(bigBoard) {
     // Preenche a matriz de vencedores
     for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
-            winners[row][col] = checkSmallBoardWin(bigBoard[row][col]);
+            winners[row][col] = bigBoard[row][col].winner || checkSmallBoardWin(bigBoard[row][col]);
         }
     }
 
@@ -184,8 +184,8 @@ socket.on('gameState', (state) => {
         for (let col = 0; col < 3; col++) {
             const winner = checkSmallBoardWin(state.board[row][col]);
             if (winner) {
-                // Marca o tabuleiro menor como vencido
-                state.board[row][col] = winner; // Substitui o tabuleiro pelo vencedor ('X' ou 'O')
+                // Marca o tabuleiro menor como vencido sem apagar as jogadas
+                state.board[row][col].winner = winner; // Adiciona uma propriedade "winner"
             }
         }
     }
@@ -194,6 +194,8 @@ socket.on('gameState', (state) => {
     const bigBoardWinner = checkBigBoardWin(state.board);
     if (bigBoardWinner) {
         message.textContent = `Jogador ${bigBoardWinner} venceu o jogo!`;
+        // Desabilita novas jogadas
+        disableAllCells();
     }
 
     // Atualiza a interface
@@ -234,11 +236,9 @@ function updateBoard(board) {
                 const cells = smallBoard.querySelectorAll('.cell');
 
                 // Verifica se o tabuleiro menor foi vencido
-                const winner = checkSmallBoardWin(board[row][col]);
+                const winner = board[row][col].winner;
                 if (winner) {
-                    // Marca o tabuleiro como vencido
                     smallBoard.classList.add(`winner-${winner}`);
-                    // Bloqueia novas jogadas no tabuleiro menor
                     cells.forEach(cell => {
                         cell.removeEventListener('click', handleCellClick);
                     });
@@ -278,7 +278,7 @@ function updateActiveBoards(nextBoardRow, nextBoardCol) {
         smallBoard.classList.remove('active-board');
 
         // Verifica se o tabuleiro está vencido
-        const isBoardWon = checkSmallBoardWin(gameState.board[row][col]) !== null;
+        const isBoardWon = gameState.board[row][col].winner;
 
         // Se o próximo tabuleiro estiver vencido ou cheio, destaca todos os tabuleiros não vencidos
         if (nextBoardRow === null && nextBoardCol === null && !isBoardWon) {
@@ -286,6 +286,14 @@ function updateActiveBoards(nextBoardRow, nextBoardCol) {
         } else if (nextBoardRow === row && nextBoardCol === col) {
             smallBoard.classList.add('active-board');
         }
+    });
+}
+
+// Desabilita todas as células (quando o jogo termina)
+function disableAllCells() {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.removeEventListener('click', handleCellClick);
     });
 }
 
