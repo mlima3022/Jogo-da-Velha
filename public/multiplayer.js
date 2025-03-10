@@ -55,8 +55,7 @@ function handleCellClick(cell, smallBoard) {
 
     // Logs para depuração
     console.log("currentPlayerRole:", currentPlayerRole);
-    console.log("gameState.currentPlayer:", gameState.currentPlayer);
-
+    
     // Verifica se é a vez do jogador
     if (currentPlayerRole !== gameState.currentPlayer) {
         console.log("Não é a sua vez.");
