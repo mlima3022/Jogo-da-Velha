@@ -53,6 +53,10 @@ function handleCellClick(cell, smallBoard) {
         return;
     }
 
+    // Logs para depuração
+    console.log("currentPlayerRole:", currentPlayerRole);
+    console.log("gameState.currentPlayer:", gameState.currentPlayer);
+
     // Verifica se é a vez do jogador
     if (currentPlayerRole !== gameState.currentPlayer) {
         console.log("Não é a sua vez.");
@@ -67,7 +71,7 @@ function handleCellClick(cell, smallBoard) {
     // Verifica se o próximo tabuleiro está vencido ou cheio
     const nextBoardRow = cellRow;
     const nextBoardCol = cellCol;
-    const nextBoard = gameState.board[nextBoardRow][nextBoardCol];
+    const nextBoard = gameState.board[nextBoardRow] && gameState.board[nextBoardRow][nextBoardCol];
 
     const isNextBoardWon = checkSmallBoardWin(nextBoard) !== null;
     const isNextBoardFull = isSmallBoardFull(nextBoard);
@@ -91,23 +95,43 @@ function checkSmallBoardWin(board) {
 
     // Verifica linhas
     for (let i = 0; i < 3; i++) {
-        if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+        if (
+            board[i] && // Verifica se a linha existe
+            board[i][0] && // Verifica se a célula existe
+            board[i][0] === board[i][1] && 
+            board[i][1] === board[i][2]
+        ) {
             return board[i][0]; // Retorna 'X' ou 'O' se houver vitória
         }
     }
 
     // Verifica colunas
     for (let j = 0; j < 3; j++) {
-        if (board[0][j] && board[0][j] === board[1][j] && board[1][j] === board[2][j]) {
+        if (
+            board[0] && // Verifica se a linha existe
+            board[0][j] && // Verifica se a célula existe
+            board[0][j] === board[1][j] && 
+            board[1][j] === board[2][j]
+        ) {
             return board[0][j]; // Retorna 'X' ou 'O' se houver vitória
         }
     }
 
     // Verifica diagonais
-    if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+    if (
+        board[0] && // Verifica se a linha existe
+        board[0][0] && // Verifica se a célula existe
+        board[0][0] === board[1][1] && 
+        board[1][1] === board[2][2]
+    ) {
         return board[0][0]; // Retorna 'X' ou 'O' se houver vitória
     }
-    if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+    if (
+        board[0] && // Verifica se a linha existe
+        board[0][2] && // Verifica se a célula existe
+        board[0][2] === board[1][1] && 
+        board[1][1] === board[2][0]
+    ) {
         return board[0][2]; // Retorna 'X' ou 'O' se houver vitória
     }
 
