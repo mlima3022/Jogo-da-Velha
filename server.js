@@ -123,18 +123,19 @@ rooms.set(roomId, {
 function handleBotRoom(socket) {
   // Cria uma nova sala do bot
   const botRoomId = `bot-sala${botRooms.size + 1}`;
-  const botGameState = {
-    players: { [socket.id]: 'X' }, // O jogador local sempre será 'X'
-    board: Array.from({ length: 3 }, () => 
+const botGameState = {
+  players: { [socket.id]: 'X' }, // O jogador local sempre será 'X'
+  board: Array.from({ length: 3 }, () => 
+    Array.from({ length: 3 }, () => 
       Array.from({ length: 3 }, () => 
-        Array.from({ length: 3 }, () => 
-          Array(3).fill(null)
-        )
-      ),
-    currentPlayer: 'X',
-    nextBoardRow: null,
-    nextBoardCol: null,
-  };
+        Array(3).fill(null)
+      )
+    )
+  ), // Parêntese de fechamento adicionado aqui
+  currentPlayer: 'X',
+  nextBoardRow: null,
+  nextBoardCol: null,
+};
 
   // Adiciona a sala do bot ao mapa
   botRooms.set(botRoomId, botGameState);
