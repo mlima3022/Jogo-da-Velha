@@ -100,6 +100,7 @@ function handleMultiplayerRoom(socket) {
       roomState.currentPlayer = roomState.currentPlayer === 'X' ? 'O' : 'X'; // Alterna o jogador
       roomState.nextBoardRow = cellRow;
       roomState.nextBoardCol = cellCol;
+      io.to(roomId).emit('gameState', roomState); // Envia o novo estado para todos na sala
     } else {
       console.log("Jogada inválida:", move); // Debug
     }
