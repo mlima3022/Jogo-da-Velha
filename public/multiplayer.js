@@ -53,9 +53,6 @@ function handleCellClick(cell, smallBoard) {
         return;
     }
 
-    // Logs para depuração
-    console.log("currentPlayerRole:", currentPlayerRole);
-    
     // Verifica se é a vez do jogador
     if (currentPlayerRole !== gameState.currentPlayer) {
         console.log("Não é a sua vez.");
@@ -90,12 +87,15 @@ function handleCellClick(cell, smallBoard) {
 
 // Verifica vitória em um tabuleiro menor (3x3)
 function checkSmallBoardWin(board) {
-    if (!board) return null; // Verifica se o tabuleiro existe
+    if (!board || !Array.isArray(board) || board.length !== 3) {
+        return null; // Retorna null se o tabuleiro não for válido
+    }
 
     // Verifica linhas
     for (let i = 0; i < 3; i++) {
         if (
-            board[i] && // Verifica se a linha existe
+            Array.isArray(board[i]) && // Verifica se a linha é um array
+            board[i].length === 3 && // Verifica se a linha tem 3 células
             board[i][0] && // Verifica se a célula existe
             board[i][0] === board[i][1] && 
             board[i][1] === board[i][2]
@@ -107,8 +107,7 @@ function checkSmallBoardWin(board) {
     // Verifica colunas
     for (let j = 0; j < 3; j++) {
         if (
-            board[0] && // Verifica se a linha existe
-            board[0][j] && // Verifica se a célula existe
+            board[0] && board[0][j] && // Verifica se a célula existe
             board[0][j] === board[1][j] && 
             board[1][j] === board[2][j]
         ) {
@@ -118,16 +117,14 @@ function checkSmallBoardWin(board) {
 
     // Verifica diagonais
     if (
-        board[0] && // Verifica se a linha existe
-        board[0][0] && // Verifica se a célula existe
+        board[0] && board[0][0] && // Verifica se a célula existe
         board[0][0] === board[1][1] && 
         board[1][1] === board[2][2]
     ) {
         return board[0][0]; // Retorna 'X' ou 'O' se houver vitória
     }
     if (
-        board[0] && // Verifica se a linha existe
-        board[0][2] && // Verifica se a célula existe
+        board[0] && board[0][2] && // Verifica se a célula existe
         board[0][2] === board[1][1] && 
         board[1][1] === board[2][0]
     ) {
@@ -139,7 +136,9 @@ function checkSmallBoardWin(board) {
 
 // Verifica se um tabuleiro menor está cheio
 function isSmallBoardFull(board) {
-    if (!board) return false; // Verifica se o tabuleiro existe
+    if (!board || !Array.isArray(board) || board.length !== 3) {
+        return false; // Retorna false se o tabuleiro não for válido
+    }
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             if (!board[i][j]) {
