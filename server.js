@@ -57,7 +57,8 @@ function handleMultiplayerRoom(socket) {
           Array.from({ length: 3 }, () => 
             Array(3).fill(null)
           )
-        ),
+        )
+      ),
       currentPlayer: 'X', // Linha 61 corrigida
       nextBoardRow: null,
       nextBoardCol: null,
