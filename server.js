@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Configura o Socket.IO com CORS
 const io = new Server(server, {
   cors: {
-    origin: 'jogo-da-velha-production-49cc.up.railway.app', // Permite conexões apenas do frontend especificado
+    origin: 'https://jogo-da-velha-production-49cc.up.railway.app', // Permite conexões apenas do frontend especificado
     methods: ['GET', 'POST'],
   },
 });
@@ -239,7 +239,7 @@ function findAvailableRoom() {
 }
 
 // Inicia o servidor
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, (8080) => {
-  console.log(`Servidor rodando na porta ${8080}`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
