@@ -50,20 +50,19 @@ function handleMultiplayerRoom(socket) {
   let roomId = findAvailableRoom();
   if (!roomId) {
     roomId = `sala${rooms.size + 1}`; // Cria uma nova sala
-    rooms.set(roomId, {
-      players: {},
-      board: Array.from({ length: 3 }, () => 
-        Array.from({ length: 3 }, () => 
-          Array.from({ length: 3 }, () => 
-            Array(3).fill(null)
-          )
-        )
-      ),
-      currentPlayer: 'X', // Linha 61 corrigida
-      nextBoardRow: null,
-      nextBoardCol: null,
-    });
-  }
+rooms.set(roomId, {
+  players: {},
+  board: Array.from({ length: 3 }, () => 
+    Array.from({ length: 3 }, () => 
+      Array.from({ length: 3 }, () => 
+        Array(3).fill(null)
+      )
+    )
+  ),
+  currentPlayer: 'X', // Linha 61 corrigida
+  nextBoardRow: null,
+  nextBoardCol: null,
+});
 
   // Entra na sala
   socket.join(roomId);
